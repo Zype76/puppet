@@ -3,7 +3,7 @@ class puppettest () {
 
   file { '/etc/motd' :
     ensure => present,
-    source => 'puppet:///modules/puppet/motd.txt', 
+    source => 'puppet:///modules/puppettest/motd.txt', 
   }
 
   # Set selinux as permissive
