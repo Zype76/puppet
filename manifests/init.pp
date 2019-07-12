@@ -1,9 +1,9 @@
 #Base puppet module for hosts managed with foreman
-class base () {
+class puppettest () {
 
   file { '/etc/motd' :
     ensure => present,
-    content => puppet:///modules/base/motd.txt, 
+    source => 'puppet:///modules/puppet/motd.txt', 
   }
 
   # Set selinux as permissive
