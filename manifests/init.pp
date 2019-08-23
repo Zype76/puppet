@@ -13,7 +13,7 @@ class puppettest () {
   }
   # Install prometheus
   if $prometheus == 'yes'{
-    class { prometheus_host: }
+    class { puppettest::prometheus_host: }
   }
 
 }

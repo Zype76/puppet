@@ -1,11 +1,11 @@
-class prometheus_host () {
+class puppettest::prometheus_host () {
   #Create a directory and user for it
   group { 'prometheus':
     ensure => 'present',
   }
   user { 'prometheus':
     ensure           => 'present',
-    group            => 'prometheus',
+    gid            => 'prometheus',
     password_max_age => '99999',
     password_min_age => '0',
     shell            => '/bin/bash',
@@ -19,7 +19,8 @@ class prometheus_host () {
     provider => systemd,
   }
 
-  file { '/opt/prometheus' :
+  #Create required directories
+  file { [ '/opt/prometheus', '/var/lib/prometheus', '/var/lib/prometheus/data' ]:
     ensure => directory,
     owner  => 'prometheus',
     require => User['prometheus'],
@@ -27,12 +28,12 @@ class prometheus_host () {
 
   #Install prometheus and configure service
   exec { 'wget -P /tmp/ https://github.com/prometheus/prometheus/releases/download/v2.12.0/prometheus-2.12.0.linux-amd64.tar.gz':
-    creates => '/root/alreadydonelel',
+    creates => '/tmp/prometheus-2.12.0.linux-amd64.tar.gz',
     path    => ['/usr/bin', '/usr/sbin',],
   }
   
-  exec { 'tar xvzf /tmp/prometheus-2.12.0.linux-amd64.tar.gz -C /opt/prometheus':
-    creates => '/root/alreadydonelel2',
+  exec { 'tar xvzf /tmp/prometheus-2.12.0.linux-amd64.tar.gz -C /opt/prometheus --strip=1':
+    creates => '/opt/prometheus/prometheus',
     path    => ['/usr/bin', '/usr/sbin',],
   }
   
