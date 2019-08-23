@@ -18,7 +18,7 @@ class puppettest () {
 
   # Install prometheus
   if $monitorme == 'yes'{
-    class { puppettest::node_exporter: }
+    class { puppettest::prometheus_node: }
   }
 
 }
