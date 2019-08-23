@@ -12,6 +12,13 @@ class prometheus_host () {
     require => Group['prometheus'],
   }
 
+  #Disable firewalld (only run this on a secure private network!)
+  service { 'firewalld':
+    ensure   => stopped,
+    enable   => false,
+    provider => systemd,
+  }
+
   file { '/opt/prometheus' :
     ensure => directory,
     owner  => 'prometheus',
