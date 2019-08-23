@@ -16,4 +16,9 @@ class puppettest () {
     class { puppettest::prometheus_host: }
   }
 
+  # Install prometheus
+  if $monitorme == 'yes'{
+    class { puppettest::node_exporter: }
+  }
+
 }
