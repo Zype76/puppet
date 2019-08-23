@@ -11,4 +11,9 @@ class puppettest () {
     mode => 'permissive',
     type => 'targeted',
   }
+  # Install prometheus
+  if $prometheus == 'yes'{
+    class { prometheus_host: }
+  }
+
 }
