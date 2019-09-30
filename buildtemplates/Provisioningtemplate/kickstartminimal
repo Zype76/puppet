@@ -1,0 +1,82 @@
+<%#
+kind: provision
+name: Kickstart eth0 default
+model: ProvisioningTemplate
+oses:
+- CentOS
+- RedHat
+%>
+install
+url --url http://mirror.centos.org/centos/7/os/x86_64
+
+lang en_US.UTF-8
+keyboard us
+timezone --utc UTC
+skipx
+
+
+network --bootproto dhcp --hostname <%= @host %>" --device=#{@host.mac}" 
+rootpw --iscrypted <%= root_pass %>
+authconfig --useshadow --passalgo=sha256 --kickstart
+selinux --disabled
+firewall --disabled
+services --disabled NetworkManager,gpm,sendmail,cups,pcmcia,isdn,rawdevices,hpoj,bluetooth,openibd,avahi-daemon,avahi-dnsconfd,hidd,hplip,pcscd
+eula --agreed
+reboot
+
+bootloader --location=mbr --append="nofb quiet splash=quiet net.ifnames=0 biosdevname=0" <%= @grub_pass %>
+zerombr
+clearpart --all --initlabel
+autopart
+
+text
+reboot 
+%packages
+
+yum
+dhclient
+ntp
+wget
+@Core
+-biosdevname
+redhat-lsb-core
+
+%end
+
+%post --nochroot
+exec < /dev/tty3 > /dev/tty3
+#changing to VT 3 so that we can see whats going on....
+/usr/bin/chvt 3
+(
+cp -va /etc/resolv.conf /mnt/sysimage/etc/resolv.conf
+/usr/bin/chvt 1
+) 2>&1 | tee /mnt/sysimage/root/install.postnochroot.log
+%end
+
+%post --log=/mnt/sysimage/root/install.post.log
+logger "Starting anaconda postinstall"
+exec < /dev/tty3 > /dev/tty3
+#changing to VT 3 so that we can see whats going on....
+/usr/bin/chvt 3
+
+#Install epel
+rpm -Uvh https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+
+# update all the base packages from the updates repository
+yum -t -y update
+
+#Requires enable-puppet5 = true as a param
+<%= snippet 'puppetlabs_repo' %>
+<%= snippet 'puppet_setup' %>
+
+touch /tmp/foreman_built
+%end
+
+%post --erroronfail
+if test -f /tmp/foreman_built; then
+  echo "calling home: build is done!"
+  /usr/bin/wget -q -O /dev/null --no-proxy --method POST --header 'Content-Type: text/plain' --body-file=/mnt/sysimage/root/install.post.log 'http://foreman.zype76.com/unattended/built?token=1cfc79af-ede9-4f17-803c-4f202084f7d2'
+fi
+
+sync
+%end
